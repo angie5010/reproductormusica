@@ -1,0 +1,120 @@
+@import url('https://fonts.googleapis.com/css2?family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&display=swap');
+
+:root {
+    --font-ubuntu: "Ubuntu", sans-serif;
+    --gris: #f8f3f386
+}
+
+body{
+    background-image: url("/cover/album-cover.jpg");
+    background-size:2500px 850px;
+    background-repeat: no-repeat;
+    background-attachment:fixed;
+    background-position:top;
+    overflow: hidden;
+}
+.header{
+    font-family: var(--font-ubuntu);
+    width: 100%;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    overflow-x: hidden;
+}
+
+.header_nav{
+display: flex;
+overflow-x: hidden;
+}
+
+.header__logo{
+    overflow: hidden;
+    align-items:center;
+    flex-grow: 3;
+}
+
+.logo{
+    width: 200px;
+    border-radius: 20%;
+    justify-self:flex-start;
+}
+
+.header__login{
+    font-family: var(--font-ubuntu);
+    font-style: normal;
+    align-items: center;
+}
+
+.nav__links{
+    overflow: hidden;
+}
+
+.login{
+    align-items: flex-end;
+    text-decoration: none;
+    font-size: 50px;
+    font-weight: 600;
+}
+
+.header__content{
+    font-family: var(--font-ubuntu);
+    font-style: normal;
+    text-align: end;
+    overflow-x: hidden;
+}
+
+.header_search{
+    cursor: pointer;
+    font-size: 30px;
+}
+
+.header_search_text{
+    font-size: 30px;
+}
+
+.properties_container{
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    align-items: center;
+    overflow: hidden;
+}
+.properties_songs_container{
+    background-color: blueviolet;
+    display: flex;
+    flex-direction: column;
+    justify-self: flex-start;
+
+    padding: 0 5% 0 ;
+    overflow: hidden;
+}
+
+.cont-sect1{
+background-color: rgb(197, 184, 209);
+color: brown;
+margin: 2% 0 2% 0;
+}
+
+.cont-sect2{
+    background-color: rgb(69, 153, 238);
+    margin-bottom: 2%;  
+}
+
+.cont-sect3{
+    background-color: rgb(154, 213, 238);
+    margin-bottom: 2%;
+}
+
+.properties_player_container{
+    background-color: deeppink;
+    padding: 1%; 
+}
+.button_player_container {
+    width: 100%;
+    text-align: center;
+}
+
+.button_player_container i{
+    cursor: pointer;
+    font-size: 70px;
+}
