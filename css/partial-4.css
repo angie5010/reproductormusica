@@ -1,0 +1,153 @@
+/* Estilos Generales */
+body, html {
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f0f2f5;
+}
+
+
+.properties_header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #1A1A1D;
+    color: #C5C6C7;
+    padding: 0 20px; /* Ajusta el padding según necesites */
+}
+
+/* Si necesitas que el logo o la barra de búsqueda estén más alineados al centro, puedes ajustar el margen */
+nav figure a img {
+    height: 50px; /* Ajusta el tamaño del logo según necesites */
+}
+
+.properties_header nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 50px;
+}
+
+.search_logout_container {
+    display: flex;
+    align-items: center;
+}
+
+.search_container {
+    display: flex;
+    align-items: center;
+}
+
+.logout_btn {
+    background-color: #E94560;
+    border: none;
+    color: white;
+    padding: 10px 20px;
+    margin-left: 20px;
+    cursor: pointer;
+    border-radius: 20px;
+}
+
+.logout_btn:hover {
+    background-color: #D8315B;
+}
+
+.header__content {
+    justify-content: flex-end;
+}
+
+/* Cabecera y Navegación */
+.properties_header {
+    background-color: #000000;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    padding: 20px;
+}
+
+nav figure img {
+    max-width: 100px; /* Ajusta esto según el tamaño de tu logo */
+}
+
+.header__content {
+    display: flex;
+    justify-content: center;
+    padding: 20px 0;
+}
+
+.header__content input[type="text"] {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 20px;
+    margin-right: 10px;
+}
+
+.bi-search {
+    cursor: pointer;
+    font-size: 24px;
+    position: relative;
+    top: 5px;
+}
+
+/* Contenido Principal */
+.main_properties {
+    display: flex;
+    justify-content: space-around;
+    padding: 20px;
+}
+
+.content_songs_sections {
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border-radius: 10px;
+    padding: 20px;
+    margin: 20px;
+    box-sizing: border-box;
+}
+
+.content_songs_button div {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 0;
+}
+
+.content_songs_button span {
+    flex-grow: 1;
+}
+
+.bi {
+    margin: 0 10px;
+    cursor: pointer;
+}
+
+/* Reproductor de Música */
+.properties_player_container {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border-radius: 10px;
+    margin-top: 20px;
+}
+
+.cover__container img {
+    max-width: 150px;
+}
+
+.songs__info__container {
+    flex-grow: 1;
+    padding: 0 20px;
+}
+
+.button_player_container {
+    display: flex;
+    align-items: center;
+}
+
+.button_player_container i {
+    font-size: 30px;
+    margin: 0 10px;
+    cursor: pointer;
+}
