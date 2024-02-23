@@ -153,15 +153,138 @@ class Usuario {
 
 class Reproductor {
     #id;
-    #cancionActual;
+    #reproductor;
+    #contadorError;
+    #elementosTextoReproductor;
+    #iconosBotones;
+    #botonesReproduccion;
     #caratulaActual;
-    #playListActual;
+    #playListPrincipal;
+    #playListBusqueda;
+    #listaPlayLists;
+    #elementosBusqueda;
+    #idPlayListActual;
 
-    constructor(id, cancionActual, caratulaActual, playListActual) {
+    constructor(id, reproductor, caratulaActual, elementosTextoReproductor, iconosBotones, botonesReproduccion, playListPrincipal, playListBusqueda, playListSecundarios, elementosBusqueda) {
         this.#id = id;
-        this.#cancionActual = cancionActual;
+        this.#reproductor = reproductor;
+        this.#elementosTextoReproductor = elementosTextoReproductor;
+        this.#iconosBotones = iconosBotones;
+        this.#botonesReproduccion = botonesReproduccion;
         this.#caratulaActual = caratulaActual;
-        this.#playListActual = playListActual;
+        this.#playListPrincipal = playListPrincipal;
+        this.#playListBusqueda = playListBusqueda;
+        this.#elementosBusqueda=elementosBusqueda;
+        this.#listaPlayLists= new Array(playListPrincipal,playListBusqueda);
+        for (let i = 0; i < playListSecundarios.length; i++) {
+            this.#listaPlayLists.push(playListSecundarios[i]);
+        }
+        this.#idPlayListActual=0;
+        this.#contadorError=-1;
+        this.#reproductor.addEventListener('volumechange',()=>{
+            if(this.#contadorError!=-1)
+            this.manejarVolumen()
+        });
+    
+        this.#reproductor.addEventListener('pause',()=>{
+            if(this.#contadorError!=-1){
+                this.manejarReproduccion()
+                this.refrescarMiniaturas();
+            }
+            });
+
+        this.#reproductor.addEventListener("ended", ()=>{
+            if(this.#contadorError!=-1){
+                this.siguiente()
+                this.refrescarMiniaturas();
+            }
+            });
+
+        this.#reproductor.addEventListener('error',()=>{
+            if(this.#contadorError!=-1)this.siguiente(true)});
+            
+        this.#reproductor.addEventListener('play',()=>{
+            if(this.#contadorError!=-1){
+                this.manejarReproduccion()
+                //this.refrescarMiniaturas();
+            }
+                
+            });
+
+        this.#reproductor.addEventListener('playing',()=>{
+            if(this.#contadorError!=-1){
+                this.manejarReproduccion();
+                this.refrescarMiniaturas();
+            }
+                
+        });
+        this.#contadorError=0;
+        let botones=Object.keys(this.#botonesReproduccion);
+
+        for (let i = 0; i < botones.length; i++) {
+            let key = botones[i];
+            
+            if(key=="siguiente"||key=="anterior"||key=="parar"){
+                this.#botonesReproduccion[key].addEventListener('click', () => {
+                    this[key]();
+                });
+            }
+            else{
+                if(key=="reproducir"){
+                    this.#botonesReproduccion[key].addEventListener('click', () => {
+                        if(this.#reproductor.paused){
+                            this.reproducir();
+                        }
+                        else{
+                            this.pausar();
+                        }
+                    });
+                    
+                }
+                else{
+                    this.#botonesReproduccion[key].addEventListener('click', () => {
+                        if(this.#reproductor.muted){
+                            this.activarSonido();
+                        }
+                        else{
+                            this.desactivarSonido();
+                        }
+                    });
+                }
+            }
+            
+            
+        }
+
+        for (let i = 0; i < this.#listaPlayLists.length; i++) {
+            this.#listaPlayLists[i].contenedorHtml.addEventListener("click", (e)=>this.accionesMiniatura(e));
+            if(this.#listaPlayLists[i].id!=this.#playListBusqueda.id){
+                this.#listaPlayLists[i].contenedorHtml.removeEventListener("click", (e)=>this.accionesMiniatura(e));
+            }
+            
+        }
+
+        let camposBusqueda=Object.keys(this.#elementosBusqueda);
+
+        for (let i = 0; i < camposBusqueda.length; i++) {
+            let key = camposBusqueda[i];
+            
+            if(key=="texto"){
+                this.#elementosBusqueda[key].addEventListener("keyup", (e) => {
+                    this.buscarCancion(e);
+                });
+            }
+            else{
+                this.#elementosBusqueda[key].addEventListener("click", (e)=>{
+                    this.#elementosBusqueda["texto"].value = "";
+                    this.buscarCancion(e, true)
+                });
+            }
+            
+            
+        }
+
+
     }
 
     get id() {
@@ -172,44 +295,325 @@ class Reproductor {
         this.#id = id;
     }
 
-    get cancionActual() {
-        return this.#cancionActual;
+    get reproductor() {
+        return this.#reproductor;
     }
 
-    set cancionActual(cancionActual) {
-        this.#cancionActual = cancionActual;
+    set reproductor(reproductor) {
+        this.#reproductor = reproductor;
     }
+
+    get elementosBusqueda() {
+        return this.#elementosBusqueda;
+    }
+
+    set elementosBusqueda(elementosBusqueda) {
+        this.#elementosBusqueda = elementosBusqueda;
+    }
+
+    get elementosTextoReproductor() {
+        return this.#elementosTextoReproductor;
+    }
+
+    set elementosTextoReproductor(elementosTextoReproductor) {
+        this.#elementosTextoReproductor = elementosTextoReproductor;
+    }
+
+    get iconosBotones() {
+        return this.#iconosBotones;
+      }
+    
+    set iconosBotones(iconosBotones) {
+        this.#iconosBotones = iconosBotones;
+      }
+    
+    get botonesReproduccion() {
+        return this.#botonesReproduccion;
+      }
+    
+    set botonesReproduccion(botonesReproduccion) {
+        this.#botonesReproduccion = botonesReproduccion;
+      }
 
     get caratulaActual() {
         return this.#caratulaActual;
     }
-
+    
     set caratulaActual(caratulaActual) {
         this.#caratulaActual = caratulaActual;
     }
 
-    get playListActual() {
-        return this.#playListActual;
+    get idPlayListActual() {
+        return this.#idPlayListActual;
     }
 
-    set playListActual(playListActual) {
-        this.#playListActual = playListActual;
+    set idPlayListActual(idPlayListActual) {
+        this.#idPlayListActual = idPlayListActual;
+    }
+
+    get playListPrincipal() {
+        return this.#playListPrincipal;
+    }
+
+    set playListPrincipal(playListPrincipal) {
+        this.#playListPrincipal = playListPrincipal;
+    }
+
+    get playListBusqueda() {
+        return this.#playListBusqueda;
+    }
+
+    set playListBusqueda(playListBusqueda) {
+        this.#playListBusqueda = playListBusqueda;
+    }
+
+    get listaPlayLists() {
+        return this.#listaPlayLists;
+    }
+
+    set listaPlayLists(listaPlayLists) {
+        this.#listaPlayLists = listaPlayLists;
+    }
+
+    get contadorError() {
+        return this.#contadorError;
+    }
+
+    set contadorError(contadorError) {
+        this.#contadorError = contadorError;
     }
 
     empezar(){
-        return this.#playListActual.reproducir();
+        this.actualizarElementos(this.#listaPlayLists[this.#idPlayListActual].actual());
     }
 
     anterior(){
-        return this.#playListActual.anterior();
+        this.parar();
+        this.actualizarElementos(this.#listaPlayLists[this.#idPlayListActual].anterior());
+        this.reproducir();
     }
 
     siguiente(){
-        return this.#playListActual.siguiente();
+        this.parar();
+        this.actualizarElementos(this.#listaPlayLists[this.#idPlayListActual].siguiente());
+        this.reproducir();
     }
 
     actualizar(){
-        return this.#playListActual.obtenerCanciones();
+        return this.#listaPlayLists[this.#idPlayListActual].htmlListaCanciones();
+    }
+
+    accionesMiniatura(event){
+        let datos=event.target.parentNode.dataset;
+        let cancion=datos.cancion;
+        let playList=datos.playlist;
+        if(event.target.className.includes("reproducir")){  
+            this.cambiarPlayList(playList,cancion);
+        }
+        else {
+            let indexSeleccionado=null;
+            let origen=event.target.className;
+            let indexPersonal=Object.keys(this.#listaPlayLists).find(llave=>
+                this.#listaPlayLists[llave].nombre=="Personal"
+            );  
+            let indexFavoritos=Object.keys(this.#listaPlayLists).find(llave=>
+                this.#listaPlayLists[llave].nombre=="Favoritos"
+            );
+            
+            if(origen.includes("agregar")){
+                this.agregarAPlayList(this.#listaPlayLists[indexPersonal].id,cancion)
+            }
+            
+            if(origen.includes("eliminar")){
+                this.eliminarDePlayList(this.#listaPlayLists[indexPersonal].id,cancion);
+            }
+            if(origen.includes("favoritear")){
+                this.agregarAPlayList(this.#listaPlayLists[indexFavoritos].id,cancion)
+            }
+            if(origen.includes("desfavoritear")){
+                this.eliminarDePlayList(this.#listaPlayLists[indexFavoritos].id,cancion);
+            }
+
+        }
+       
+    }
+
+    manejarReproduccion(){
+        if(this.#reproductor.paused){
+            this.#botonesReproduccion["reproducir"].className=this.#iconosBotones["reproducir"]
+        }
+        else{
+            this.#botonesReproduccion["reproducir"].className=this.#iconosBotones["pausar"]
+        }
+    }
+
+    manejarVolumen(){
+        if(this.#reproductor.muted){
+            this.#botonesReproduccion["volumen"].className=this.#iconosBotones["activar"]
+        }
+        else{
+            this.#botonesReproduccion["volumen"].className=this.#iconosBotones["desactivar"]
+        }
+    }
+
+    reproducir(){
+            this.#reproductor.play();
+            this.manejarReproduccion(); 
+    }
+
+    parar(){
+        this.pausar();
+        this.#reproductor.currentTime=0;
+    }
+
+    pausar(){
+        //if(!this.#reproductor.paused){
+        this.#reproductor.pause();
+        this.manejarReproduccion();
+        //}
+        
+    }
+
+    desactivarSonido(){
+        if(!this.#reproductor.muted){
+            
+            this.#reproductor.muted=true;
+            this.manejarVolumen();
+        }
+    }
+
+    activarSonido(){
+        if(this.#reproductor.muted){
+            
+            this.#reproductor.muted=false;
+            this.manejarVolumen();
+        }
+
+    }
+
+    actualizarElementos(cancion=null){
+        let llaves=Object.keys(this.#elementosTextoReproductor);
+        for (let i = 0; i < llaves.length; i++) {
+            const key = llaves[i];
+            if(key!="tituloReproductor"){
+                this.#elementosTextoReproductor[key].innerText=cancion[key];
+            }
+            else{
+                this.#elementosTextoReproductor[key].innerText=this.#listaPlayLists[this.#idPlayListActual].nombre;
+            }
+            
+        }
+        this.#caratulaActual.src="assets/caratula/"+cancion.caratula;
+        this.#reproductor.src="assets/audio/"+cancion.ubicacion;
+        //this.#reproductor.load();
+        this.#listaPlayLists[this.#idPlayListActual].actualizarContenedor();
+    }
+
+    cambiarPlayList(idPlayList, idCancion){
+        
+        if(this.#listaPlayLists[this.#idPlayListActual].id!=idPlayList){
+            for (let i = 0; i < this.#listaPlayLists.length; i++) {
+                if(this.#listaPlayLists[i].id==idPlayList){
+                    //if(this.#idPlayListActual!=i){
+                        this.#idPlayListActual=i;
+                        break;
+                    //}
+                    
+                }            
+            }
+        }
+        
+        
+        this.#listaPlayLists[this.#idPlayListActual].cambiarACancion(idCancion);
+        this.actualizarElementos(this.#listaPlayLists[this.#idPlayListActual].actual())
+        this.reproducir();
+    }
+
+    agregarAPlayList(idPlayList, idCancion){
+        for (let i = 0; i < this.#playListPrincipal.listaCanciones.length; i++) {
+            if(this.#playListPrincipal.listaCanciones[i].id==idCancion){
+                for (let j = 0; j < this.#listaPlayLists.length; j++) {
+                    if(this.#listaPlayLists[j].id==idPlayList){
+                        this.#listaPlayLists[j].agregarCancion(this.#playListPrincipal.listaCanciones[i]);
+                        this.#listaPlayLists[j].actualizarContenedor(this.#listaPlayLists[this.#idPlayListActual].id,this.#listaPlayLists[this.#idPlayListActual].actual().id);
+                        break;
+                            //return j;
+                    }            
+                }
+            }            
+        }
+        
+    }
+
+    eliminarDePlayList(idPlayList, idCancion){
+        for (let i = 0; i < this.#playListPrincipal.listaCanciones.length; i++) {
+            if(this.#playListPrincipal.listaCanciones[i].id==idCancion){
+                for (let j = 0; j < this.#listaPlayLists.length; j++) {
+                    if(this.#listaPlayLists[j].id==idPlayList){
+                        this.#listaPlayLists[j].eliminarCancion(this.#playListPrincipal.listaCanciones[i])
+                        this.#listaPlayLists[j].actualizarContenedor();
+                        break;
+                            //return j;
+                    }            
+                }
+            }            
+        }
+        
+    }
+
+    buscarCancion(evento, limpiar=false){
+        let termino = evento.target.value;
+        if(!limpiar&&termino!=null&&termino!=""){
+            this.#playListBusqueda.listaCanciones=this.#playListPrincipal.buscarCanciones(termino);
+            for (let i = 0; i < this.#listaPlayLists.length; i++) {
+                if(this.#listaPlayLists[i].id==this.#playListBusqueda.id){
+                    this.#listaPlayLists[i].contenedorHtml.addEventListener("click", (e)=>this.accionesMiniatura(e));
+                    this.#listaPlayLists[i].actualizarContenedor(this.#listaPlayLists[this.#idPlayListActual].id,this.#listaPlayLists[this.#idPlayListActual].actual().id);
+                }
+                else if(this.#listaPlayLists[i].id==this.#playListPrincipal.id){
+                    this.#listaPlayLists[i].contenedorHtml.removeEventListener("click", (e)=>this.accionesMiniatura(e));
+
+                }
+            }
+        }
+        else{
+            this.limpiarBusqueda();
+        }
+        
+    }
+
+    limpiarBusqueda(){
+        //this.#playListBusqueda.listaCanciones=this.#playListPrincipal.buscarCanciones("");
+        this.#playListBusqueda.listaCanciones=[];
+        for (let i = 0; i < this.#listaPlayLists.length; i++) {
+            if(this.#listaPlayLists[i].id==this.#playListBusqueda.id){
+                this.#listaPlayLists[i].contenedorHtml.removeEventListener("click", (e)=>this.accionesMiniatura(e));
+
+            }
+            else if(this.#listaPlayLists[i].id==this.#playListPrincipal.id){
+                this.#listaPlayLists[i].contenedorHtml.addEventListener("click", (e)=>this.accionesMiniatura(e));
+                this.#listaPlayLists[i].actualizarContenedor();
+                
+            }
+        }
+    }
+
+    refrescarMiniaturas(){
+        for (let i = 0; i < this.#listaPlayLists.length; i++) {
+            if(this.#listaPlayLists[i].listaCanciones.length > 0){
+                this.#listaPlayLists[i].actualizarContenedor(this.#listaPlayLists[this.#idPlayListActual].id,this.#listaPlayLists[this.#idPlayListActual].actual().id);
+                this.manejarReproduccion();
+            }
+            
+        }
+        if(this.#reproductor.paused||this.#reproductor.duration==0){
+            let resultados=document.querySelectorAll(".reproducir");
+            for (let i = 0; i < resultados.length; i++)
+            {
+                resultados[i].className="bi bi-play-fill reproducir"
+            }
+        }
+
     }
 
 }
@@ -218,13 +622,17 @@ class PlayList {
     #id;
     #nombre;
     #listaCanciones;
+    #contenedorHtml;
     #idActual;
+    #htmlListaCanciones;
 
-    constructor(id, nombre, listaCanciones) {
+    constructor(id, nombre, listaCanciones, contenedorHtml) {
         this.#id = id;
         this.#nombre = nombre;
         this.#listaCanciones = listaCanciones;
+        this.#contenedorHtml=contenedorHtml;
         this.#idActual=0;
+        this.#htmlListaCanciones="";
     }
 
     get id() {
@@ -259,6 +667,22 @@ class PlayList {
         this.#idActual = idActual;
     }
 
+    get htmlListaCanciones() {
+        return this.#htmlListaCanciones;
+    }
+
+    set htmlListaCanciones(htmlListaCanciones) {
+        this.#htmlListaCanciones = htmlListaCanciones;
+    }
+
+    get contenedorHtml() {
+        return this.#contenedorHtml;
+    }
+
+    set contenedorHtml(contenedorHtml) {
+        this.#contenedorHtml = contenedorHtml;
+    }
+
     siguiente(){
         if(this.#idActual==this.#listaCanciones.length-1){
             this.#idActual=0;
@@ -266,7 +690,8 @@ class PlayList {
         else{
             this.#idActual=this.#idActual+1;
         }
-        //this.reproducir();
+        //console.log(this.#idActual);
+        return this.actual();
     }
 
     anterior(){
@@ -276,21 +701,102 @@ class PlayList {
         else{
             this.#idActual=this.#idActual-1;
         }
-        //this.reproducir();
+        //console.log(this.#idActual);
+        return this.actual();
     }
 
-    reproducir(){
+    actual(){
         return this.#listaCanciones[this.#idActual];
     }
 
-    obtenerCanciones(){
-        let htmlNuevo='';
-        for (let i = 0; i < this.#listaCanciones.length; i++) {
-            let element = this.#listaCanciones[i];
-            htmlNuevo=htmlNuevo+"<div><span>"+element.nombre+"</span><i class='bi bi-play-fill'></i><i class='bi bi-heart-fill'></i><i class='bi bi-plus-lg'></i></div>";      
+    agregarCancion(cancion){
+        let salir=false;
+        if(this.#listaCanciones.length>0){
+            for (let i = 0; i < this.#listaCanciones.length; i++) {
+                if(this.#listaCanciones[i].id==cancion.id){
+                    salir=true;
+                    break;
+                }
+            }
         }
-        return htmlNuevo;
-        
+        if(!salir){
+            let auxiliar=this.#listaCanciones;
+            auxiliar.push(cancion);
+            this.#listaCanciones=auxiliar;
+        }
+    }
+
+    eliminarCancion(cancion){
+        if(this.#listaCanciones.length>0){
+            let indiceEliminar=null;
+            for (let i = 0; i < this.#listaCanciones.length; i++) {
+                if(this.#listaCanciones[i].id==cancion.id){
+                    this.#listaCanciones.splice(i, 1);
+                    break;
+                }
+            }
+        }
+    }
+
+    buscarCanciones(termino){
+        if(termino!=null&&termino!=""){
+            termino=termino.toLowerCase();
+            let resultado=this.#listaCanciones.filter(cancion => 
+                cancion.nombre.toLowerCase().includes(termino)||cancion.artista.toLowerCase().includes(termino)||cancion.genero.toLowerCase().includes(termino)||cancion.album.toLowerCase().includes(termino)||cancion.anio.toString().toLowerCase().includes(termino)
+            );
+            return resultado;
+        }
+        else{
+            return this.#listaCanciones;
+        }  
+    }
+
+    cambiarACancion(id){
+        for (let i = 0; i < this.#listaCanciones.length; i++) {
+            if(this.#listaCanciones[i].id==id){
+                this.#idActual=i;
+            }
+        }
+    }
+
+    generarHtml(playListReproductido=null,idReproducido=null){
+
+
+        this.#htmlListaCanciones='';
+        if(this.#listaCanciones.length>0){
+            for (let i = 0; i < this.#listaCanciones.length; i++) {
+                let element = this.#listaCanciones[i];
+                this.#htmlListaCanciones=this.#htmlListaCanciones+
+                    `
+                    <div data-cancion='${element.id}' data-playlist='${this.#id}' id='${this.#id}-${this.#nombre}-${element.id}'>
+                        <img class='miniatura' src='assets/caratula/${element.caratula}'>
+                        <span class='titulo-cancion-playlist'>${element.nombre}</span>
+                        <i class="${((playListReproductido!=null&&idReproducido!=null&&idReproducido==element.id&&playListReproductido==this.#id))?"bi bi-pause-fill":"bi bi-play-fill"} reproducir"></i>
+                    `;
+                if(this.#nombre=="Favoritos"){
+                    this.#htmlListaCanciones=this.#htmlListaCanciones+
+                        "<i class='bi bi-heart-fill desfavoritear'></i>";      
+                }
+                else if(this.#nombre=="Personal"){
+                    this.#htmlListaCanciones=this.#htmlListaCanciones+
+                        "<i class='bi bi-trash3-fill eliminar'></i>";      
+                }
+                else{
+                    this.#htmlListaCanciones=this.#htmlListaCanciones+
+                        `
+                        <i class='bi bi-heart favoritear'></i>
+                        <i class='bi bi-plus-lg agregar'></i>
+                        `;      
+                }
+                this.#htmlListaCanciones=this.#htmlListaCanciones+
+                    "</div>";
+            }
+        }
+        return this.#htmlListaCanciones;
+    }
+
+    actualizarContenedor(playListReproductido=null,idReproducido=null){
+        this.#contenedorHtml.innerHTML=this.generarHtml(playListReproductido,idReproducido);
     }
 }
 
@@ -338,71 +844,77 @@ let users=[
 ];
 
 
-
-/*
-let reproductor={
-    id:1,cancionActual:null,caratulaActual:null,playListActual:null
-}
-*/
-
-
-
-
-/*
-let playListFavorito={
-    id:1,nombre:"Favoritos",listaCanciones:null
-}
-
-let playListPrincipal={
-    id:1,nombre:"General",listaCanciones:null
-}
-
-let playListB6usqueda={
-    id:1,nombre:"Resultados",listaCanciones:null
-}
-
-let playListPersonal={
-    id:1,nombre:"Mi lista",listaCanciones:null
-}
-*/
-
-
 document.addEventListener("DOMContentLoaded", function() {
 
     const canciones = datosCanciones.map(cancion => 
         new Cancion(cancion.id, cancion.nombre, cancion.artista, cancion.genero, cancion.album, cancion.caratula, cancion.ubicacion, cancion.duracion, cancion.anio));
     
-    let resultado=canciones.filter(cancion => 
-            cancion.nombre.includes("busqueda")||cancion.artista.includes("busqueda")||cancion.genero.includes("busqueda")
-    );
-    
+        
     let usuarios=null;
     let usuario1 = new Usuario(1, "Maria Jimenez", "mjimenez", "12345678", "maria_jimenez@hotmail.com");
     let usuario2 = new Usuario(2, "Juan Rendon", "jrendon", "12345678", "juan.rendon@yahoo.com");
     let usuario3 = new Usuario(3, "Diana Sauces", "dsauces", "12345678", "diana-sauces@gmail.com");
 
-    let playListFavorito = new PlayList(1, "Favoritos", null);
-    let playListPrincipal = new PlayList(1, "General", canciones);
+    const elementBL = document.getElementById('loginBtn');
+
+    if (elementBL) {
+        document.getElementById('loginBtn').addEventListener('click', function () {
+            const username = document.getElementById('username').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            let usuario1 = new Usuario(1, "Carmen Bastidas", "cbastidas", "12345678", "cbastidas@gmail.com");
+            let usuario2 = new Usuario(2, "Juan Rendon", "jrendon", "12345678", "juan.rendon@yahoo.com");
+            let usuario3 = new Usuario(3, "Diana Sauces", "dsauces", "12345678", "diana-sauces@gmail.com");
+
+            let usuarios = [usuario1, usuario2, usuario3];
+
+            const usuarioEncontrado = usuarios.find(usuario => usuario.nombreUsuario === username && usuario.correo === email && usuario.contrasenia === password);
+
+            if (usuarioEncontrado) {
+                window.location.href = 'music.html';
+            } else {
+                alert('Usuario o contraseña incorrectos');
+            }
+        });
+    }
+
+    const elementCL = document.getElementById('closeBtn');
+
+    if (elementCL) {
+        document.getElementById('closeBtn').addEventListener('click', function () {
+            if (confirm("¿Estás seguro de que quieres cerrar sesión?")) {
+                window.location.href = 'login.html';
+            }
+        });
+    }
+
+    const resultadosBuscador=document.getElementById("resultados-buscador");
+    const resultadosPersonal=document.getElementById("resultados-personal");
+    const resultadosFavoritos=document.getElementById("resultados-favoritos");
+
+    let playListPrincipal = new PlayList(1, "General", canciones, resultadosBuscador);
+    let playListBusqueda = new PlayList(2, "Resultados", [], resultadosBuscador);
+    let playListFavorito = new PlayList(3, "Favoritos", [], resultadosFavoritos);
+    let playListPersonal = new PlayList(4, "Personal", [], resultadosPersonal);
+
+
+    var primerClick=false;
     
-    let playListBusqueda = new PlayList(1, "Resultados", null);
-    let playListPersonal = new PlayList(1, "Mi lista", null);
-
-    let reproductorPrincipal = new Reproductor(1, null, null, playListPrincipal);
-
-   
-
+    const botonBusqueda=document.getElementById("boton-busqueda");
+    const inputBusqueda=document.getElementById("texto-busqueda");
 
     const anterior = document.getElementById('anterior');
     const reproducir = document.getElementById('reproducir');
-    const pausar = document.getElementById('pausar');
     const siguiente = document.getElementById('siguiente');
     const parar = document.getElementById('parar');
-    const desactivar = document.getElementById('desactivar');
     const activar = document.getElementById('activar');
 
     const caratula = document.getElementById('caratula');
 
-    const reproductor=document.getElementById("reproductor");
+    const reproductor = new Audio();
+
+    const tituloReproductor=document.getElementById('titulo-reproductor');
 
     const nombre = document.getElementById('nombre');
     const artista = document.getElementById('artista');
@@ -410,62 +922,55 @@ document.addEventListener("DOMContentLoaded", function() {
     const album = document.getElementById('album');
     const anio = document.getElementById('anio');
 
-    let resultadosBuscador=document.getElementById("resultados-buscador");
+    var iconosBotones={
+        anterior:"bi bi-skip-backward-circle-fill",
+        reproducir:"bi bi-play-circle-fill",
+        pausar:"bi bi-pause-circle-fill",
+        siguiente:"bi bi-skip-forward-circle-fill",
+        parar:"bi bi-stop-circle-fill",
+        activar:"bi bi-volume-mute-fill",
+        desactivar:"bi bi-volume-up-fill",
+        favoritear:"bi bi-heart",
+        desfavoritear:"bi bi-heart-fill",
+        agregar:"bi bi-plus-lg",
+        eliminar:"bi bi-trash3-fill",
+    }
+
+    const botonesReproduccion={
+        anterior:anterior,
+        reproducir:reproducir,
+        siguiente:siguiente,
+        parar:parar,
+        volumen:activar
+    }
+
+    const elementosBusqueda = {
+        texto: inputBusqueda,
+        boton: botonBusqueda
+    }
+
+    const elementosReproductor={
+        tituloReproductor:tituloReproductor,
+        nombre:nombre,
+        artista: artista,
+        genero: genero,
+        album: album,
+        anio: anio,
+    }
+
+    let reproductorPrincipal = new Reproductor(
+        1, 
+        reproductor, 
+        caratula, 
+        elementosReproductor, 
+        iconosBotones, 
+        botonesReproduccion, 
+        playListPrincipal, 
+        playListBusqueda, 
+        [playListPersonal,playListFavorito],
+        elementosBusqueda
+    );
     
-    resultadosBuscador.innerHTML=playListPrincipal.obtenerCanciones();
+    reproductorPrincipal.empezar();
 
-    //reproductor.play();
-
-    anterior.addEventListener('click', () => {
-        parar.click();
-        reproductorPrincipal.anterior();
-        reproducir.click();
-    });
-
-    reproducir.addEventListener('click', () => {
-        let cancionInicial=reproductorPrincipal.empezar();
-        caratula.src="assets/caratula/"+cancionInicial.caratula;
-        reproductor.src="assets/audio/"+cancionInicial.ubicacion;
-        nombre.innerText=cancionInicial.nombre;
-        artista.innerText=cancionInicial.artista;
-        genero.innerText=cancionInicial.genero;
-        album.innerText=cancionInicial.album;
-        anio.innerText=cancionInicial.anio;
-        reproductor.play();
-        reproducir.style.display="none";
-        pausar.style.display="block";
-    });
-
-    pausar.addEventListener('click', () => {
-        reproductor.pause();
-        reproducir.style.display="block";
-        pausar.style.display="none";
-    });
-
-    siguiente.addEventListener('click', () => {
-        parar.click();
-        reproductorPrincipal.siguiente();
-        reproducir.click();
-    });
-
-    parar.addEventListener('click', () => {
-        pausar.click();
-        reproductor.currentTime=0;
-    });
-
-    desactivar.addEventListener('click', () => {
-        reproductor.muted=false;
-        activar.style.display="block";
-        desactivar.style.display="none";
-    });
-
-    activar.addEventListener('click', () => {
-        reproductor.muted=true;
-        activar.style.display="none";
-        desactivar.style.display="block";
-    });
-
-
-
-    
   });

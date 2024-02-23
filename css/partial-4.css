@@ -1,4 +1,4 @@
-/* Estilos Generales */
+
 body, html {
     margin: 0;
     padding: 0;
@@ -7,16 +7,14 @@ body, html {
 }
 
 .music-player {
-    border: 1px solid #ccc;
     border-radius: 10px;
     padding: 20px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     height: 95%;
 }
 
 .album-cover {
-    width: 500px;
-    height: 500px;
+    width: 50%;
+    height: 50%;
     border-radius: 10px;
     object-fit: cover;
     margin-bottom: 10px;
@@ -78,6 +76,18 @@ nav figure a img {
     background-color: #D8315B;
 }
 
+#resultsList li {
+    list-style: none;
+    padding: 8px;
+    border-bottom: 1px solid #ccc;
+}
+
+#searchInput {
+    margin-bottom: 10px;
+    padding: 8px;
+    width: calc(100% - 16px);
+}
+
 .header__content {
     justify-content: flex-end;
 }
@@ -129,6 +139,35 @@ nav figure img {
     box-sizing: border-box;
 }
 
+.content_login_sections {
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border-radius: 10px;
+    padding: 20px;
+    margin: 20px;
+}
+
+.content_login_button {
+    overflow: auto;
+    flex-direction: column;
+    height: 90%;
+    border-radius: 10px;
+    background: #1A1A1D;
+    color: #cccccc;
+    font-size: unset;
+    padding: 10px;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.content_songs_button {
+    display: flex;
+    overflow: auto;
+    flex-direction: column;
+}
+
 .content_songs_button div {
     display: flex;
     align-items: center;
@@ -147,7 +186,7 @@ nav figure img {
 
 /* Reproductor de Música */
 .properties_player_container {
-    width: 100%;
+    width: 65%;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -185,5 +224,13 @@ nav figure img {
 
 .bi.bi-pause-circle-fill{
     display: none;
+
+}
+
+.properties_songs_container{
+    display: flex;
+    flex-direction: column;
+    justify-self: flex-start;
+    width: 30%;
 
 }
